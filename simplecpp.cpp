@@ -116,6 +116,9 @@ static const simplecpp::TokenString HAS_INCLUDE("__has_include");
 
 static const simplecpp::TokenString INNER_COMMA(",,");
 
+static const simplecpp::TokenString SHADER_VERSION("version");
+
+
 template<class T> static std::string toString(T t)
 {
     // NOLINTNEXTLINE(misc-const-correctness) - false positive
@@ -536,7 +539,8 @@ std::string simplecpp::TokenList::stringify() const
     Location loc(files);
     for (const Token *tok = cfront(); tok; tok = tok->next) {
         if (tok->location.line < loc.line || tok->location.fileIndex != loc.fileIndex) {
-            ret << "\n#line " << tok->location.line << " \"" << tok->location.file() << "\"\n";
+            //ret << "\n#line " << tok->location.line << " \"" << tok->location.file() << "\"\n";
+            ret <<  "\n";
             loc = tok->location;
         }
 
@@ -3332,7 +3336,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             continue;
         }
 
-        if (rawtok->op == '#' && !sameline(rawtok->previousSkipComments(), rawtok)) {
+        if (rawtok->op == '#' && !sameline(rawtok->previousSkipComments(), rawtok) && rawtok->next->str() != SHADER_VERSION) {
             if (!sameline(rawtok, rawtok->next)) {
                 rawtok = rawtok->next;
                 continue;
@@ -3652,7 +3656,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
         }
 
         bool hash=false, hashhash=false;
-        if (rawtok->op == '#' && sameline(rawtok,rawtok->next)) {
+        if (rawtok->op == '#' && sameline(rawtok,rawtok->next) && rawtok->next->str() != SHADER_VERSION) {
             if (rawtok->next->op != '#') {
                 hash = true;
                 rawtok = rawtok->next; // skip '#'
